@@ -2,12 +2,13 @@
 import Versions from './components/Versions.vue'
 import { ref } from 'vue'
 
-const url = ref('')
+const url = ref('https://www.bilibili.com')
 
 const ipcHandle = () => window.electron.ipcRenderer.send('ping')
 
 const openWindow = () => {
   window.electron.ipcRenderer.send('open-window', url.value)
+  // window.open(url.value, '_target', 'top=500,left=200,frame=false,nodeIntegration=no')
 }
 </script>
 
@@ -28,7 +29,7 @@ const openWindow = () => {
     </div>
     <div class="action">
       <a target="_blank" rel="noreferrer" @click="ipcHandle">Send IPC</a>
-      <a target="" rel="noreferrer" @click="openWindow">Open Window</a>
+      <button @click="openWindow">Open Window</button>
     </div>
   </div>
   <Versions />

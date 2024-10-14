@@ -1,11 +1,13 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, session } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
+let mainWindow: BrowserWindow | null = null
+
 function createWindow(): void {
   // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 900,
     height: 670,
     show: false,
@@ -18,7 +20,7 @@ function createWindow(): void {
   })
 
   mainWindow.on('ready-to-show', () => {
-    mainWindow.show()
+    mainWindow?.show()
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -57,13 +59,40 @@ app.whenReady().then(() => {
   let childWindow: BrowserWindow | null = null
 
   ipcMain.on('open-window', (_event, url: string) => {
-    childWindow = new BrowserWindow({
-      width: 500,
-      height: 500
-    })
-    childWindow.loadURL(url)
+    if (mainWindow) {
+      childWindow = new BrowserWindow({
+        width: 700,
+        height: 470,
+        modal: true,
+        parent: mainWindow,
+        webPreferences: {
+          nodeIntegration: true,
+          contextIsolation: false
+        }
+      })
 
-    childWindow.on('close', () => (childWindow = null))
+      childWindow.loadURL(url)
+
+      childWindow.on('close', () => (childWindow = null))
+
+      const urlString: string = url.endsWith('/') ? `${url}*` : `${url}/*`
+
+      const filter = { urls: [urlString] }
+
+      session.defaultSession.webRequest.onBeforeSendHeaders(filter, (_defails, _callback) => {
+        session.defaultSession.cookies.get({ url }).then((cookies) => {
+          cookies.forEach((cookie) => {
+            if (cookie.name === '_uuid') {
+              childWindow?.loadURL('http://localhost:5173/#/countdown')
+              childWindow?.webContents.send('token-found', cookie)
+            }
+          })
+        })
+        _callback({})
+      })
+
+      ipcMain.on('close-child-window', () => childWindow?.close())
+    }
   })
 
   app.on('activate', function () {
