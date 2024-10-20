@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Versions from './components/Versions.vue'
+// import Versions from './components/Versions.vue'
 import { ref } from 'vue'
 
 const url = ref('https://www.bilibili.com')
@@ -32,5 +32,5 @@ const openWindow = () => {
       <button @click="openWindow">Open Window</button>
     </div>
   </div>
-  <Versions />
+  <!-- <Versions /> -->
 </template>

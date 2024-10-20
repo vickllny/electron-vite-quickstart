@@ -81,9 +81,11 @@ app.whenReady().then(() => {
 
       session.defaultSession.webRequest.onBeforeSendHeaders(filter, (_defails, _callback) => {
         session.defaultSession.cookies.get({ url }).then((cookies) => {
-          cookies.forEach((cookie) => {
+          cookies.forEach(async (cookie) => {
             if (cookie.name === '_uuid') {
-              childWindow?.loadURL('http://localhost:5173/#/countdown')
+              await childWindow?.loadFile(join(__dirname, '../renderer/index.html'), {
+                hash: 'countdown'
+              })
               childWindow?.webContents.send('token-found', cookie)
             }
           })
