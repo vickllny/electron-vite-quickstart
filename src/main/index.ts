@@ -2,6 +2,7 @@ import { app, shell, BrowserWindow, ipcMain, session } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+import ConfigStore from 'configstore'
 
 let mainWindow: BrowserWindow | null = null
 
@@ -55,6 +56,12 @@ app.whenReady().then(() => {
   ipcMain.on('ping', () => console.log('pong'))
 
   createWindow()
+
+  const configStore: ConfigStore = new ConfigStore('.mtrc')
+
+  configStore.set('username', 'vickllny')
+
+  console.log(configStore.get('username'))
 
   let childWindow: BrowserWindow | null = null
 
