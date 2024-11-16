@@ -2,6 +2,7 @@ import { app, shell, BrowserWindow, ipcMain, session } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+import ConfigStore from 'configstore'
 
 let mainWindow: BrowserWindow | null = null
 
@@ -56,6 +57,12 @@ app.whenReady().then(() => {
 
   createWindow()
 
+  const configStore: ConfigStore = new ConfigStore('.mtrc')
+
+  configStore.set('username', 'vickllny')
+
+  console.log(configStore.get('username'))
+
   let childWindow: BrowserWindow | null = null
 
   ipcMain.on('open-window', (_event, url: string) => {
@@ -81,9 +88,11 @@ app.whenReady().then(() => {
 
       session.defaultSession.webRequest.onBeforeSendHeaders(filter, (_defails, _callback) => {
         session.defaultSession.cookies.get({ url }).then((cookies) => {
-          cookies.forEach((cookie) => {
+          cookies.forEach(async (cookie) => {
             if (cookie.name === '_uuid') {
-              childWindow?.loadURL('http://localhost:5173/#/countdown')
+              await childWindow?.loadFile(join(__dirname, '../renderer/index.html'), {
+                hash: 'countdown'
+              })
               childWindow?.webContents.send('token-found', cookie)
             }
           })

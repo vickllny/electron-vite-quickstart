@@ -5,35 +5,30 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'Countdown',
-  data() {
-    return {
-      countdown: 5,
-      tokenValue: ''
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+
+const countdown = ref<number>(5)
+const tokenValue = ref<string>('')
+
+const startCountdown = (): void => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const inverval = setInterval(() => {
+    countdown.value--
+    if (countdown.value === 0) {
+      clearInterval(inverval)
+      window.electron.ipcRenderer.send('close-child-window')
     }
-  },
-  created() {
-    this.startCountdown()
-    window.electron.ipcRenderer.on('token-found', (_event, _cookie) => {
-      console.log(JSON.stringify(_cookie))
-      this.tokenValue = _cookie?.value
-    })
-  },
-  methods: {
-    startCountdown() {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const inverval = setInterval(() => {
-        this.countdown--
-        if (this.countdown === 0) {
-          clearInterval(internal)
-          window.electron.ipcRenderer.send('close-child-window')
-        }
-      }, 100)
-    }
-  }
+  }, 1000)
 }
+
+onMounted((): void => {
+  startCountdown()
+  window.electron.ipcRenderer.on('token-found', (_event, _cookie) => {
+    console.log(JSON.stringify(_cookie))
+    tokenValue.value = _cookie?.value
+  })
+})
 </script>
 
 <style scoped>
